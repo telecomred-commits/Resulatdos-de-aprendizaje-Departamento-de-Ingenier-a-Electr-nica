@@ -1,0 +1,1466 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Evaluación por RA (equivalente a Excel) — Robusta</title>
+  <style>
+    :root{
+      --bg:#063a40;
+      --panel:#0b4f57;
+      --panel2:#0f5f6b;
+      --text:#eaf7f7;
+      --muted:#b7d9dd;
+      --good:#2ecc71;
+      --bad:#e74c3c;
+      --warn:#f1c40f;
+      --accent:#0aa6a6;
+      --shadow:0 10px 30px rgba(0,0,0,.25);
+      --radius:18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 700px at 30% -10%, rgba(122,167,255,.18), transparent 55%),
+                  radial-gradient(800px 500px at 90% 10%, rgba(55,214,122,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      overflow: hidden;
+    }
+    .wrap{
+      max-width: 100%;
+      height: 100vh;
+      margin: 0 auto;
+      padding: 14px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .topbar{
+      display:flex; gap:14px; align-items:center; justify-content:space-between;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:var(--radius);
+      padding:14px 16px;
+      box-shadow:var(--shadow);
+    }
+    .title{display:flex;flex-direction:column;gap:2px}
+    .title h1{font-size:16px;margin:0}
+    .title p{font-size:12px;margin:0;color:var(--muted)}
+    .controls{display:flex;flex-wrap:wrap; gap:10px; align-items:center; justify-content:flex-end}
+    .btn{
+      appearance:none;border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;border-radius:12px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .btn:hover{border-color:rgba(255,255,255,.25)}
+    .btn.primary{background:rgba(122,167,255,.18); border-color:rgba(122,167,255,.35)}
+    .btn.danger{background:rgba(255,92,122,.14); border-color:rgba(255,92,122,.35)}
+    input[type="file"]{display:none}
+    label.file{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:12px;
+      border:1px dashed rgba(255,255,255,.22);
+      background:rgba(255,255,255,.04);
+      cursor:pointer;
+      font-weight:700;
+    }
+    .grid{
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 12px;
+      margin-top: 12px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:var(--radius);
+      padding:14px 16px;
+      box-shadow:var(--shadow);
+    }
+    .meta{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+    .field{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:10px 12px;
+      display:flex;flex-direction:column;gap:6px;
+      min-height:56px;
+    }
+    .field .k{font-size:11px;color:var(--muted)}
+    .inp{
+      width:100%; box-sizing:border-box;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      outline:none;
+      font-size:12px;
+    }
+    .inp:focus{border-color:rgba(122,167,255,.55); box-shadow:0 0 0 3px rgba(122,167,255,.12)}
+    select.inp{appearance:auto}
+    .twoCols{
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 12px;
+      height: 100%;
+      min-height: 320px;
+      overflow: hidden;
+    }
+    .raList{display:flex; flex-direction:column; gap:8px}
+    .raItem{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:10px 12px;
+    }
+    .raItem .raHead{display:flex; gap:8px; align-items:center; justify-content:space-between;margin-bottom:6px}
+    .pill{
+      font-family:var(--mono);
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+    }
+    .small{font-size:12px; color:var(--muted); line-height:1.35}
+    .tableWrap{overflow:auto; border-radius:14px; border:1px solid rgba(255,255,255,.10)}
+    table{border-collapse:separate;border-spacing:0; width:100%; min-width:980px; background:rgba(10,16,33,.35)}
+    thead th{
+      position:sticky; top:0;
+      background:rgba(16,26,51,.95);
+      border-bottom:1px solid rgba(255,255,255,.10);
+      padding:10px 10px;
+      font-size:12px;
+      text-align:left;
+      vertical-align:bottom;
+      z-index:1;
+    }
+    tbody td{border-bottom:1px solid rgba(255,255,255,.08); padding:8px 10px; font-size:12px; vertical-align:top}
+    tbody tr:hover td{background:rgba(255,255,255,.03)}
+    .num{font-family:var(--mono)}
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.04);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .dot{width:10px;height:10px;border-radius:50%}
+    .dot.bad{background:var(--bad)}
+    .dot.warn{background:var(--warn)}
+    .dot.good{background:var(--good)}
+    .dot.neutral{background:rgba(255,255,255,.35)}
+    .hint{font-size:12px;color:var(--muted);margin:8px 0 0 0}
+    .footerRow td{background:rgba(255,255,255,.03);font-weight:800}
+    .log{
+      font-family:var(--mono);
+      font-size:12px;
+      white-space:pre-line;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:10px 12px;
+      line-height:1.35;
+      max-height:220px;
+      overflow:auto;
+    }
+    @media (max-width: 980px){
+      .meta{grid-template-columns:1fr 1fr}
+      .twoCols{grid-template-columns:1fr}
+    }
+    /* Fix selects en tema oscuro */
+    select.inp { background-color: #0f1730; color: #e9eefc; border: 1px solid rgba(255,255,255,.18); }
+    select.inp option { background-color: #0f1730; color: #e9eefc; }
+    select.inp option:checked, select.inp option:hover { background-color: #1a2750; color: #ffffff; }
+    select.inp optgroup { background-color: #0f1730; color: #7aa7ff; }
+    #bands{ overflow-y:auto; max-height:100%; padding-right:6px; }
+    .levelsCard{ display:flex; flex-direction:column; overflow:hidden; }
+    .levelsCard #bands{ flex:1; overflow-y:auto; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>Evaluación por Resultados de Aprendizaje (RA) — Robusta</h1>
+        <p>Programa → asignatura → RA; notas por cortes; niveles; análisis institucional; export a Excel con conclusión.</p>
+      </div>
+      <div class="controls">
+  <label class="file">📄 Cargar Excel (.xlsx)<input id="file" type="file" accept=".xlsx" /></label>
+
+  <select id="selTipoAnalisis" class="inp" style="min-width:190px" title="Tipo de análisis a exportar">
+    <option value="auto">Análisis: Automático</option>
+    <option value="local">Análisis: Local</option>
+    <option value="gemini">Análisis: Gemini</option>
+  </select>
+
+  <button class="btn" id="addRow" disabled>➕ Agregar estudiante</button>
+  <button class="btn danger" id="clear" disabled>🧹 Limpiar</button>
+  <button class="btn primary" id="export" disabled>⬇️ Exportar Excel</button>
+</div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="meta">
+          <div class="field">
+            <div class="k">Programa</div>
+            <select id="selPrograma" class="inp" disabled>
+              <option value="">—</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="k">Asignatura</div>
+            <select id="selAsignatura" class="inp" disabled>
+              <option value="">—</option>
+            </select>
+          </div>
+          <div class="field"><div class="k">Año</div><div class="small" id="metaAnio">—</div></div>
+          <div class="field"><div class="k">Periodo</div><div class="small" id="metaPeriodo">—</div></div>
+        </div>
+        <p class="hint" id="statusHint">Cargando datos…</p>
+      </div>
+
+      <div class="twoCols">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div>
+              <div style="font-weight:900">Resultados de Aprendizaje</div>
+              <div class="small">Se cargan desde Hoja2 (columna F). Se usan los 3 primeros como Corte 1–3.</div>
+            </div>
+            <span class="pill" id="raCount">0 RA</span>
+          </div>
+          <div class="raList" id="raList" style="margin-top:10px"></div>
+        </div>
+
+        <div class="card levelsCard">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div>
+              <div style="font-weight:900">Tabla de niveles</div>
+              <div class="small">Se lee desde Hoja1 (O7:S9). Rangos 0–50.</div>
+            </div>
+            <span class="pill" id="bandCount">0 niveles</span>
+          </div>
+          <div id="bands" style="margin-top:10px"></div>
+          <div class="hint" id="weightsPill" style="margin-top:10px">Pesos: —</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
+          <div>
+            <div style="font-weight:900">Registro de notas (por estudiante)</div>
+            <div class="small">Digite Código, Nombre y notas por corte. Se calcula definitiva y niveles automáticamente.</div>
+          </div>
+          <span class="pill" id="contextPill">Sin asignatura</span>
+        </div>
+        <div class="tableWrap">
+          <table>
+            <thead><tr id="theadRow"></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <p class="hint">Nota: el análisis institucional local siempre funciona; IA externa es opcional y no bloquea el export.</p>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:900;margin-bottom:6px">Diagnóstico</div>
+        <div id="logBox" class="log"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script>
+    // =========================
+    // CONFIG (IA opcional)
+    // =========================
+    // OFF -> solo análisis institucional local
+    // GEMINI_DIRECT -> llama directo a Gemini (no recomendado en front; útil solo para pruebas)
+    // BACKEND -> llama a un endpoint tuyo (recomendado)
+    const IA_MODE = 'GEMINI_DIRECT'; // 'OFF' | 'GEMINI_DIRECT' | 'BACKEND'
+    const GEMINI_API_KEY = 'AIzaSyBtbvE-f6yZE-viUvzicsAKy8ju9YSMF2w';       // solo si IA_MODE='GEMINI_DIRECT'
+    const BACKEND_URL   = '';        // solo si IA_MODE='BACKEND'
+
+    // Excel institucional en GitHub (si falla, modo manual)
+    const URL_GITHUB_RED = 'https://raw.githubusercontent.com/telecomred-commits/Resulatdos-de-aprendizaje-Departamento-de-Ingenier-a-Electr-nica/main/AssesmentRACircuitos.xlsx';
+
+    // =========================
+    // UI + STATE
+    // =========================
+    const UI = {
+  file: document.getElementById('file'),
+  addRow: document.getElementById('addRow'),
+  clear: document.getElementById('clear'),
+  export: document.getElementById('export'),
+  selTipoAnalisis: document.getElementById('selTipoAnalisis'),
+  selPrograma: document.getElementById('selPrograma'),
+  selAsignatura: document.getElementById('selAsignatura'),
+  metaAnio: document.getElementById('metaAnio'),
+  metaPeriodo: document.getElementById('metaPeriodo'),
+  statusHint: document.getElementById('statusHint'),
+  raList: document.getElementById('raList'),
+  raCount: document.getElementById('raCount'),
+  bands: document.getElementById('bands'),
+  bandCount: document.getElementById('bandCount'),
+  weightsPill: document.getElementById('weightsPill'),
+  theadRow: document.getElementById('theadRow'),
+  tbody: document.getElementById('tbody'),
+  contextPill: document.getElementById('contextPill'),
+  logBox: document.getElementById('logBox')
+};
+
+    const state = {
+      workbook: null,
+      meta: {anio:'—', periodo:'—'},
+      programas: {},
+      programaSel: '',
+      asignaturaSel: '',
+      ras: [],
+      bands: [],
+      weights: [0.3, 0.3, 0.4],
+      rows: []
+    };
+
+    // =========================
+    // HELPERS
+    // =========================
+    function log(msg){
+      const now = new Date().toLocaleTimeString();
+      UI.logBox.textContent += `[${now}] ${msg}\n`;
+      UI.logBox.scrollTop = UI.logBox.scrollHeight;
+    }
+
+    function safeText(v){
+      if (v === null || v === undefined) return '';
+      return String(v).replace(/\s+/g,' ').trim();
+    }
+
+    function escapeHtml(str){
+      return String(str ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
+
+    function dotClass(name){
+      const n = (name||'').toLowerCase();
+      if (n.includes('defi')) return 'bad';
+      if (n.includes('acep') || n.includes('bás') || n.includes('basic')) return 'warn';
+      if (n.includes('bueno') || n.includes('muy') || n.includes('excel')) return 'good';
+      return 'neutral';
+    }
+
+    function badgeHTML(levelName, tooltip){
+      if (!levelName || levelName === '—') {
+        return `<span class="badge"><span class="dot neutral"></span><span>—</span></span>`;
+      }
+      const cls = dotClass(levelName);
+      return `<span class="badge" title="${escapeHtml(tooltip||'')}"><span class="dot ${cls}"></span><span>${escapeHtml(levelName)}</span></span>`;
+    }
+
+    function avg(values){
+      const nums = values.filter(v => Number.isFinite(v));
+      if (!nums.length) return null;
+      const sum = nums.reduce((a,b)=>a+b,0);
+      return Math.round((sum/nums.length)*100)/100;
+    }
+
+    function definitive(n1, n2, n3) {
+  function notaValida(valor) {
+    if (valor === null || valor === undefined || valor === '') return null;
+
+    const n = Number(String(valor).replace(',', '.'));
+
+    if (!Number.isFinite(n)) return null;
+    if (n < 0 || n > 50) return null;
+
+    return n;
+  }
+
+  const notas = [
+    { v: notaValida(n1), w: state.weights[0] },
+    { v: notaValida(n2), w: state.weights[1] },
+    { v: notaValida(n3), w: state.weights[2] }
+  ].filter(x => x.v !== null);
+
+  if (!notas.length) return null;
+
+  const wSum = notas.reduce((s, x) => s + x.w, 0);
+  const d = notas.reduce((s, x) => s + x.v * (x.w / wSum), 0);
+
+  return Math.round(d * 100) / 100;
+}
+
+    function badgeForScore(score){
+      if (score === null || score === undefined || score === '') return {name:'—', blob:''};
+      const s = Number(score);
+      if (!Number.isFinite(s)) return {name:'—', blob:''};
+      const band = state.bands.find(b => s >= b.min && s <= b.max) || null;
+      if (!band) return {name:'—', blob:''};
+      return {name: band.name, blob: band.blob};
+    }
+
+    // =========================
+    // PARSE HOJA1 (META + BANDAS)
+    // =========================
+    function parseHoja1MetaAndBands(wb){
+      const sheetName = wb.SheetNames.includes('Hoja1') ? 'Hoja1' : wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      log(`📑 Hoja base para metadatos/niveles: ${sheetName}`);
+
+      state.meta.anio = safeText(ws['G1']?.v) || '—';
+      state.meta.periodo = safeText(ws['G2']?.v) || '—';
+      UI.metaAnio.textContent = state.meta.anio;
+      UI.metaPeriodo.textContent = state.meta.periodo;
+
+      const cols = ['O','P','Q','R','S'];
+      const bounds = [
+        {min:0,  max:29.99},
+        {min:30, max:35.99},
+        {min:36, max:40.99},
+        {min:41, max:45.99},
+        {min:46, max:50}
+      ];
+
+      const out = cols.map((col,i)=>{
+        const labelRaw = safeText(ws[`${col}7`]?.v) || `Nivel ${i+1}`;
+        const name = labelRaw.replace(':','').trim();
+
+        const textos = [];
+        for(let r=8; r<=9; r++){
+          const cell = ws[`${col}${r}`];
+          if(cell && cell.v) textos.push(safeText(cell.v));
+        }
+        const descripcion = textos.join(' ').trim();
+
+        return { name, min: bounds[i].min, max: bounds[i].max, blob: descripcion || 'Sin descripción' };
+      });
+
+      state.bands = out;
+      UI.bandCount.textContent = `${out.length} niveles`;
+      UI.bands.innerHTML = out.map(b => `
+        <div class="raItem">
+          <div class="raHead">
+            <span class="badge">
+              <span class="dot ${dotClass(b.name)}"></span>
+              <span><b>${escapeHtml(b.name)}</b> <span class="small">(${b.min}–${b.max})</span></span>
+            </span>
+          </div>
+          <div class="small">${escapeHtml(b.blob)}</div>
+        </div>
+      `).join('');
+
+      UI.weightsPill.textContent = `Pesos: ${state.weights[0]} / ${state.weights[1]} / ${state.weights[2]}`;
+      log('✅ Niveles (O7:S9) cargados.');
+    }
+
+    // =========================
+    // PARSE HOJA2 (PROGRAMAS / ASIGNATURAS / RAs)
+    // =========================
+    function splitRAsFromCell(text){
+      const t = safeText(text);
+      if (!t) return [];
+      const matches = [...t.matchAll(/RA\d+\./gi)];
+      if (!matches.length) return [];
+      const out = [];
+      for (let i=0; i<matches.length; i++){
+        const start = matches[i].index;
+        const end = (i+1 < matches.length) ? matches[i+1].index : t.length;
+        const chunk = t.slice(start, end).trim();
+        const idMatch = chunk.match(/^(RA\d+)\./i);
+        const id = idMatch ? idMatch[1].toUpperCase() : `RA${i+1}`;
+        const desc = chunk.replace(/^(RA\d+)\./i,'').trim();
+        out.push({id, text: desc});
+      }
+      return out;
+    }
+
+    function parseHoja2ProgramsSubjectsRAs(wb){
+      const sheetName = wb.SheetNames.find(n => n.toLowerCase() === 'hoja2');
+      if (!sheetName) { log('❌ No se encontró Hoja2'); return; }
+      const ws = wb.Sheets[sheetName];
+      log(`📑 Hoja2 detectada: ${sheetName}`);
+
+      state.programas = {};
+      const range = XLSX.utils.decode_range(ws['!ref']);
+
+      for (let r = range.s.r + 1; r <= range.e.r; r++) {
+        const programas = [
+          safeText(ws[XLSX.utils.encode_cell({ r, c: 0 })]?.v),
+          safeText(ws[XLSX.utils.encode_cell({ r, c: 1 })]?.v),
+          safeText(ws[XLSX.utils.encode_cell({ r, c: 2 })]?.v),
+        ].filter(Boolean);
+
+        const contenidos = safeText(ws[XLSX.utils.encode_cell({ r, c: 3 })]?.v);
+        const asignatura = safeText(ws[XLSX.utils.encode_cell({ r, c: 4 })]?.v);
+        const raCell     = safeText(ws[XLSX.utils.encode_cell({ r, c: 5 })]?.v);
+
+        if (!programas.length || !asignatura || !raCell) continue;
+
+        const ras = splitRAsFromCell(raCell);
+
+        programas.forEach(programa => {
+          if (!state.programas[programa]) state.programas[programa] = {};
+          if (!state.programas[programa][asignatura]) state.programas[programa][asignatura] = [];
+          ras.forEach(ra => state.programas[programa][asignatura].push({ ...ra, contenido: contenidos }));
+        });
+      }
+
+      const progCount = Object.keys(state.programas).length;
+      log(`✅ Programas cargados: ${progCount}`);
+
+      UI.selPrograma.innerHTML =
+        '<option value="">Seleccione programa</option>' +
+        Object.keys(state.programas).sort()
+          .map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`)
+          .join('');
+
+      UI.selPrograma.disabled = false;
+      UI.selAsignatura.innerHTML = '<option value="">Seleccione asignatura</option>';
+      UI.selAsignatura.disabled = true;
+    }
+
+    // =========================
+    // RENDER RA LIST + TABLE
+    // =========================
+    function renderRAList(){
+      UI.raCount.textContent = `${state.ras.length} RA`;
+      if (!state.ras.length){ UI.raList.innerHTML = `<div class="small">—</div>`; return; }
+      UI.raList.innerHTML = state.ras.slice(0,3).map(ra => `
+        <div class="raItem">
+          <div class="raHead">
+            <span class="pill">${escapeHtml(ra.id)}</span>
+            <span class="small">${escapeHtml(state.asignaturaSel)}</span>
+          </div>
+          <div class="small">${escapeHtml(ra.text)}</div>
+        </div>
+      `).join('') + (state.ras.length > 3 ? `<div class="small">Nota: se usan los 3 primeros RA para Corte 1–3. RA adicionales: ${state.ras.length-3}.</div>` : '');
+    }
+
+    function renderGroupRow(){
+      if (!state.rows.length) return '';
+
+      const a1 = avg(state.rows.map(r => r.n1));
+      const a2 = avg(state.rows.map(r => r.n2));
+      const a3 = avg(state.rows.map(r => r.n3));
+
+      const def =
+        (a1 ?? 0) * state.weights[0] +
+        (a2 ?? 0) * state.weights[1] +
+        (a3 ?? 0) * state.weights[2];
+
+      const b1 = badgeForScore(a1);
+      const b2 = badgeForScore(a2);
+      const b3 = badgeForScore(a3);
+      const bd = badgeForScore(def);
+
+      return `
+        <tr class="footerRow">
+          <td colspan="2">Grupo (promedio)</td>
+          <td class="num">${a1 ?? '—'}</td>
+          <td>${badgeHTML(b1.name, b1.blob)}</td>
+          <td class="num">${a2 ?? '—'}</td>
+          <td>${badgeHTML(b2.name, b2.blob)}</td>
+          <td class="num">${a3 ?? '—'}</td>
+          <td>${badgeHTML(b3.name, b3.blob)}</td>
+          <td class="num">${Number.isFinite(def) ? def.toFixed(2) : '—'}</td>
+          <td>${badgeHTML(bd.name, bd.blob)}</td>
+        </tr>
+      `;
+    }
+
+    function renderTable(){
+      const ra1 = state.ras[0]?.id || 'RA1';
+      const ra2 = state.ras[1]?.id || 'RA2';
+      const ra3 = state.ras[2]?.id || 'RA3';
+
+      UI.theadRow.innerHTML = [
+        {k:'Código', w:120},
+        {k:'Nombre', w:220},
+        {k:`Corte 1 (${ra1})`, w:140},
+        {k:`Nivel ${ra1}`, w:160},
+        {k:`Corte 2 (${ra2})`, w:140},
+        {k:`Nivel ${ra2}`, w:160},
+        {k:`Corte 3 (${ra3})`, w:140},
+        {k:`Nivel ${ra3}`, w:160},
+        {k:'Definitiva', w:120},
+        {k:'Nivel definitivo', w:170},
+      ].map(x => `<th style="min-width:${x.w}px">${escapeHtml(x.k)}</th>`).join('');
+
+      UI.tbody.innerHTML = state.rows.map((row, idx) => {
+        const def = definitive(row.n1, row.n2, row.n3);
+        const b1 = badgeForScore(row.n1);
+        const b2 = badgeForScore(row.n2);
+        const b3 = badgeForScore(row.n3);
+        const bd = badgeForScore(def);
+
+        return `
+          <tr>
+            <td><input class="inp" value="${escapeHtml(row.cod||'')}" placeholder="Código"
+              oninput="onEdit(${idx}, 'cod', this.value)" /></td>
+
+            <td><input class="inp" value="${escapeHtml(row.nombre||'')}" placeholder="Nombre"
+              oninput="onEdit(${idx}, 'nombre', this.value)" /></td>
+
+            <td><input class="inp num" value="${row.n1 ?? ''}" placeholder="0–50"
+              oninput="onEditNum(${idx}, 'n1', this.value)"
+              onkeydown="onEditNumKey(${idx}, 'n1', event)"
+              onchange="onEditNumCommit(${idx}, 'n1')" /></td>
+            <td>${badgeHTML(b1.name, b1.blob)}</td>
+
+            <td><input class="inp num" value="${row.n2 ?? ''}" placeholder="0–50"
+              oninput="onEditNum(${idx}, 'n2', this.value)"
+              onkeydown="onEditNumKey(${idx}, 'n2', event)"
+              onchange="onEditNumCommit(${idx}, 'n2')" /></td>
+            <td>${badgeHTML(b2.name, b2.blob)}</td>
+
+            <td><input class="inp num" value="${row.n3 ?? ''}" placeholder="0–50"
+              oninput="onEditNum(${idx}, 'n3', this.value)"
+              onkeydown="onEditNumKey(${idx}, 'n3', event)"
+              onchange="onEditNumCommit(${idx}, 'n3')" /></td>
+            <td>${badgeHTML(b3.name, b3.blob)}</td>
+
+            <td class="num">${def ?? '—'}</td>
+            <td>${badgeHTML(bd.name, bd.blob)}</td>
+          </tr>
+        `;
+      }).join('') + renderGroupRow();
+    }
+
+    // =========================
+    // HANDLERS ROBUSTOS DE NOTAS
+    // =========================
+    window.onEdit = (idx, key, value) => { state.rows[idx][key] = value; };
+
+    window.onEditNum = (idx, key, value) => {
+      const t = String(value ?? '').trim().replace(',', '.');
+
+  if (t === '') {
+    state.rows[idx][key] = null;
+    return;
+  }
+
+  let n = Number(t);
+
+  if (!Number.isFinite(n)) {
+    state.rows[idx][key] = null;
+    return;
+  }
+
+  if (n > 50) n = 50;
+  if (n < 0) n = 0;
+
+  state.rows[idx][key] = Math.round(n * 100) / 100;
+    };
+
+    window.onEditNumKey = (idx, key, event) => {
+      if (event.key === 'Enter') { event.preventDefault(); window.onEditNumCommit(idx, key); }
+    };
+
+    window.onEditNumCommit = (idx, key) => { renderTable(); };
+
+    // =========================
+    // MÉTRICAS + ANÁLISIS INSTITUCIONAL
+    // =========================
+    function calcularMetricasGrupo() {
+      if (!state.rows.length) return null;
+
+      const a1 = avg(state.rows.map(r => r.n1));
+      const a2 = avg(state.rows.map(r => r.n2));
+      const a3 = avg(state.rows.map(r => r.n3));
+
+      const prom =
+        (a1 ?? 0) * state.weights[0] +
+        (a2 ?? 0) * state.weights[1] +
+        (a3 ?? 0) * state.weights[2];
+
+      let tendencia = "estable";
+      if (Number.isFinite(a1) && Number.isFinite(a3)) {
+        if (a3 > a1 + 3) tendencia = "mejora sostenida";
+        else if (a3 < a1 - 3) tendencia = "descenso progresivo";
+        else if (Math.abs(a3 - a1) <= 1.5) tendencia = "comportamiento estable";
+      }
+
+      const valsCortes = [a1,a2,a3].filter(Number.isFinite);
+      const brecha = valsCortes.length ? (Math.max(...valsCortes) - Math.min(...valsCortes)) : 0;
+
+      const definitivas = state.rows
+        .map(r => definitive(r.n1, r.n2, r.n3))
+        .filter(Number.isFinite);
+
+      const n = definitivas.length || 1;
+      const mean = definitivas.reduce((s,x)=>s+x,0)/n;
+      const varianza = definitivas.reduce((s,x)=>s+(x-mean)**2,0)/n;
+      const sigma = Math.sqrt(varianza);
+
+      const enRiesgo = definitivas.filter(x => x < 30).length / n;
+
+      let alerta = "sin alerta";
+      if (prom < 30 || enRiesgo > 0.4) alerta = "riesgo alto";
+      else if (prom < 36 || enRiesgo > 0.25) alerta = "riesgo medio";
+
+      let estabilidad = "homogéneo";
+      if (sigma > 7) estabilidad = "alta dispersión";
+      else if (sigma > 4) estabilidad = "variabilidad moderada";
+
+      return {
+        a1, a2, a3,
+        prom: Math.round(prom*100)/100,
+        tendencia,
+        brecha: Math.round(brecha*100)/100,
+        sigma: Math.round(sigma*100)/100,
+        riesgoPct: Math.round(enRiesgo*100),
+        alerta,
+        estabilidad,
+        nivelC1: badgeForScore(a1),
+        nivelC2: badgeForScore(a2),
+        nivelC3: badgeForScore(a3),
+        nivelFinal: badgeForScore(prom)
+      };
+    }
+
+    function generarAnalisisAcademico(m) {
+  if (!m) return "Sin datos suficientes para el análisis.";
+
+  let lectura;
+  if (m.alerta === "riesgo alto") {
+    lectura = "se evidencia un escenario de compromiso formativo que requiere intervención docente focalizada, seguimiento académico cercano y revisión de las evidencias de aprendizaje";
+  } else if (m.estabilidad === "alta dispersión") {
+    lectura = "el grupo presenta heterogeneidad marcada en los desempeños observados, lo cual indica diferencias importantes en los niveles de apropiación de los resultados de aprendizaje";
+  } else if (m.tendencia.includes("mejora")) {
+    lectura = "se observa apropiación progresiva de los resultados de aprendizaje, con una evolución favorable entre los momentos evaluativos";
+  } else if (m.tendencia.includes("descenso")) {
+    lectura = "se observa una disminución progresiva en el desempeño entre cortes, situación que requiere revisar la secuencia didáctica, la complejidad de las actividades finales y los mecanismos de acompañamiento";
+  } else {
+    lectura = "el comportamiento del grupo se mantiene dentro de parámetros esperados, con una evolución relativamente estable entre los cortes evaluados";
+  }
+
+  let decisionRA;
+const nivelFinal = (m.nivelFinal?.name || '').toLowerCase();
+
+if (m.alerta === "riesgo alto" || m.prom < 30) {
+  decisionRA = "se recomienda revisar de manera profunda los resultados de aprendizaje, sus indicadores de logro, las evidencias solicitadas y la correspondencia entre contenidos, actividades y evaluación";
+} else if (
+  m.alerta === "riesgo medio" ||
+  nivelFinal.includes("aceptable") ||
+  nivelFinal.includes("básico") ||
+  nivelFinal.includes("basico")
+) {
+  decisionRA = "se recomienda realizar una reingeniería moderada de los resultados de aprendizaje, fortaleciendo indicadores de logro, actividades de refuerzo, estrategias didácticas y mecanismos de retroalimentación";
+} else {
+  decisionRA = "se recomienda mantener los resultados de aprendizaje, fortaleciendo la articulación entre cortes, las evidencias de desempeño, los retos aplicados y la validación de los aprendizajes";
+}
+
+  let recomendacion;
+  if (m.alerta === "riesgo alto") {
+    recomendacion = "implementar refuerzo estructurado, acompañamiento cercano y verificación sistemática de los desempeños esperados";
+  } else if (m.riesgoPct > 25) {
+    recomendacion = "focalizar acciones de nivelación en el subconjunto de estudiantes en riesgo y fortalecer el seguimiento formativo";
+  } else if (m.brecha > 8) {
+    recomendacion = "armonizar el avance entre cortes mediante actividades integradoras y retroalimentación oportuna";
+  } else if (m.estabilidad === "alta dispersión") {
+    recomendacion = "diferenciar estrategias didácticas para atender la variabilidad del grupo";
+  } else if (m.tendencia.includes("mejora")) {
+    recomendacion = "consolidar la autonomía del grupo mediante retos aplicados y validación experimental";
+  } else {
+    recomendacion = "mantener la estrategia pedagógica actual con seguimiento continuo del logro";
+  }
+
+  return (
+    `El grupo en la asignatura ${state.asignaturaSel} alcanza un promedio definitivo de ${m.prom} sobre 50, ` +
+    `ubicándose en el nivel ${m.nivelFinal.name}; ` +
+    `en el Corte 1 obtuvo un promedio de ${Number.isFinite(m.a1) ? m.a1 : '—'} sobre 50, correspondiente al nivel ${m.nivelC1.name}, con el indicador institucional: ${m.nivelC1.blob}; ` +
+    `en el Corte 2 alcanzó un promedio de ${Number.isFinite(m.a2) ? m.a2 : '—'} sobre 50, correspondiente al nivel ${m.nivelC2.name}, con el indicador institucional: ${m.nivelC2.blob}; ` +
+    `en el Corte 3 registró un promedio de ${Number.isFinite(m.a3) ? m.a3 : '—'} sobre 50, correspondiente al nivel ${m.nivelC3.name}, con el indicador institucional: ${m.nivelC3.blob}; ` +
+    `${lectura}; ` +
+    `desde el punto de vista estadístico, se identifica una tendencia de ${m.tendencia}, una brecha entre cortes de ${m.brecha} puntos y una dispersión representada por σ=${m.sigma}, lo que refleja un comportamiento clasificado como ${m.estabilidad}; ` +
+    `adicionalmente, el porcentaje de estudiantes en riesgo académico es del ${m.riesgoPct}%, por lo cual el estado general del curso se clasifica como ${m.alerta}; ` +
+    `en consecuencia, ${decisionRA}; ` +
+    `como acción de mejora, se recomienda ${recomendacion}.`
+  ).replace(/\s+/g, ' ').trim();
+}
+
+
+// =========================
+// IA OPCIONAL: SOLO ENRIQUECER, NUNCA BLOQUEAR
+// =========================
+async function obtenerAnalisisIA_enriquecido(metricas, analisisLocal) {
+  if (IA_MODE === 'OFF') return analisisLocal;
+
+  try {
+    if (IA_MODE === 'BACKEND' && BACKEND_URL) {
+      log('🤖 Consultando IA (backend)…');
+
+      const payload = {
+        programa: state.programaSel,
+        asignatura: state.asignaturaSel,
+        meta: state.meta,
+        metricas,
+        niveles: state.bands,
+        ras: state.ras.slice(0, 3),
+        analisisLocal
+      };
+
+      const resp = await fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!resp.ok) {
+        const t = await resp.text();
+        console.error('❌ HTTP BACKEND:', resp.status, t);
+        log(`⚠️ IA backend no disponible (HTTP ${resp.status}) — se usa análisis institucional.`);
+        return analisisLocal;
+      }
+
+      const json = await resp.json();
+      const txt = String(json?.text || '').replace(/\s+/g, ' ').trim();
+
+      if (txt.length >= 650) {
+        log('✅ Análisis enriquecido por IA (backend).');
+        return txt;
+      }
+
+      log('⚠️ IA backend respondió texto insuficiente — se usa análisis institucional.');
+      return analisisLocal;
+    }
+
+    if (IA_MODE === 'GEMINI_DIRECT' && GEMINI_API_KEY) {
+      log('🤖 Consultando Gemini como analista pedagógico...');
+
+      const prompt = `Actúa como un experto en evaluación de Resultados de Aprendizaje (RA) en programas de ingeniería. 
+Tu objetivo no es describir la estadística, sino interpretar el comportamiento cognitivo del grupo frente a los retos técnicos de la asignatura, basándote ESTRICTAMENTE en la información delimitada por la etiqueta <DATOS>.
+
+<DATOS>
+- Asignatura: ${state.asignaturaSel} (${state.programaSel})
+- Secuencia de desempeño cualitativo: Corte 1 [${metricas.nivelCorte1 || 'Aceptable'}], Corte 2 [${metricas.nivelCorte2 || 'Muy Bueno'}], Corte 3 [${metricas.nivelCorte3 || 'Bueno'}]
+- Tendencia general calculada: ${metricas.tendencia}
+- Nivel de dispersión académica: ${metricas.estabilidad}
+- Estado de alerta (riesgo): ${metricas.alerta}
+- Nivel cualitativo final alcanzado: ${metricas.nivelFinal?.name || 'No definido'}
+
+[Resultados de Aprendizaje por Corte]
+- RA Corte 1: ${state.ras[0]?.text || 'Fundamentos analíticos no definidos'}
+- RA Corte 2: ${state.ras[1]?.text || 'Aplicación técnica no definida'}
+- RA Corte 3: ${state.ras[2]?.text || 'Validación de aprendizajes no definida'}
+</DATOS>
+
+INSTRUCCIONES DE RAZONAMIENTO:
+1. Analiza la "Secuencia de desempeño cualitativo" detallada en <DATOS>. Si identificas fluctuaciones (como un aumento seguido de un descenso), deduce qué barreras de ingeniería, modelado o fundamentación enfrentaron los estudiantes al transitar de la complejidad técnica del RA de un corte al siguiente.
+2. Considera que el rigor y la exigencia pedagógica son manifestaciones innegociables del compromiso académico; las recomendaciones propuestas en el cierre no deben sugerir flexibilizar la evaluación, sino fortalecer el seguimiento técnico de las competencias.
+
+REGLAS ESTRICTAS DE REDACCIÓN (CUMPLIMIENTO OBLIGATORIO):
+- NUNCA menciones los promedios numéricos ni repitas las estadísticas entregadas. El lector ya posee esa matriz cuantitativa.
+- Evita categóricamente el uso de palabras exageradas como: crucial, significativo, esencial, vital.
+- El análisis debe ser técnico, académico y redactado en español, con extensión controlada.
+- Debes estructurar el texto EXACTAMENTE en cuatro párrafos breves:
+  1. Un párrafo introductorio de máximo 70 palabras que presente el estado académico general del grupo.
+  2. Un párrafo explicativo de máximo 80 palabras que relacione la secuencia de desempeño con las exigencias técnicas de los RA.
+  3. Un párrafo de contraste de máximo 70 palabras que interprete la dispersión, la homogeneidad o los factores de estabilidad del grupo.
+  4. Un párrafo de cierre de máximo 80 palabras que proponga una mejora orientada al rigor metodológico.
+- La respuesta completa no debe superar 320 palabras.
+- REGLA DE FORMATO DE SALIDA: PROHIBIDO incluir tu proceso de pensamiento, listas de verificación (checklists), viñetas, etiquetas en inglés o títulos (como "Párrafo 1:", "Introducción:"). 
+- IMPRIME ÚNICA Y EXCLUSIVAMENTE los cuatro párrafos del análisis técnico final.`;
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+
+      const resp = await fetch(url, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    contents: [
+      {
+        parts: [
+          { text: prompt }
+        ]
+      }
+    ],
+    generationConfig: {
+      maxOutputTokens: 2400,
+      temperature: 0.35,
+      topP: 0.9,
+      topK: 40
+    }
+  })
+});
+
+if (!resp.ok) {
+  const t = await resp.text();
+  console.error('❌ HTTP GEMINI:', resp.status, t);
+  log(`⚠️ Gemini no disponible (HTTP ${resp.status}) — se usa análisis institucional.`);
+  return analisisLocal;
+}
+
+const json = await resp.json();
+
+console.log('📦 JSON CRUDO RESPUESTA GEMINI:', json);
+
+const candidate = json?.candidates?.[0];
+const finishReason = candidate?.finishReason || 'SIN_FINISH_REASON';
+
+let textoGemini = String(
+  candidate?.content?.parts
+    ?.map(p => p.text || '')
+    ?.join('\n\n') || ''
+).trim();
+
+textoGemini = textoGemini
+  .replace(/\r\n/g, '\n')
+  .replace(/\r/g, '\n')
+  .replace(/[ \t]+/g, ' ')
+  .replace(/\n{3,}/g, '\n\n')
+  .trim();
+
+console.log('📝 TEXTO EXTRAÍDO GEMINI:', textoGemini);
+console.log('🏁 FINISH REASON GEMINI:', finishReason);
+console.log('📏 LONGITUD TEXTO GEMINI:', textoGemini.length);
+
+if (finishReason === 'MAX_TOKENS') {
+  console.error('❌ Gemini cortó la respuesta por límite de tokens:', json);
+  log('⚠️ Gemini cortó la respuesta por límite de tokens — se usa análisis local para evitar texto incompleto.');
+  return analisisLocal;
+}
+
+if (finishReason && finishReason !== 'STOP') {
+  console.warn('⚠️ Gemini terminó con razón no estándar:', finishReason, json);
+}
+
+const textoInvalido =
+  !textoGemini ||
+  textoGemini.length < 250 ||
+  /(?:suele|puede|requiere|permite|evidencia|orienta|fortalece|implica)$/i.test(textoGemini.trim());
+
+if (textoInvalido) {
+  console.error('❌ Gemini devolvió texto vacío, corto o aparentemente incompleto:', textoGemini);
+  log('⚠️ Gemini devolvió texto incompleto — se usa análisis local.');
+  return analisisLocal;
+}
+
+log(`✅ Análisis avanzado enriquecido por Gemini generado con éxito. FinishReason=${finishReason}.`);
+return textoGemini;
+    }
+
+    return analisisLocal;
+
+  } catch (err) {
+    console.error('❌ FALLO IA:', err);
+    log('⚠️ IA no disponible (excepción) — se usa análisis institucional.');
+    return analisisLocal;
+  }
+}
+async function resolverAnalisisSegunSeleccion(metricas, analisisLocal) {
+  const modo = UI.selTipoAnalisis?.value || 'auto';
+
+  if (modo === 'local') {
+    log('🧾 Exportación con análisis local seleccionado por el profesor.');
+    return analisisLocal;
+  }
+
+  if (modo === 'gemini') {
+    if (IA_MODE !== 'GEMINI_DIRECT' || !GEMINI_API_KEY) {
+      log('⚠️ Gemini fue seleccionado, pero no está disponible. Se usará análisis local.');
+      return analisisLocal;
+    }
+
+    try {
+      log('🤖 Exportación con análisis Gemini seleccionado por el profesor.');
+      return await obtenerAnalisisIA_enriquecido(metricas, analisisLocal);
+    } catch (err) {
+      console.error(err);
+      log('⚠️ Falló Gemini en exportación. Se usará análisis local.');
+      return analisisLocal;
+    }
+  }
+
+  log('⚙️ Exportación en modo automático.');
+  return await obtenerAnalisisIA_enriquecido(metricas, analisisLocal);
+}
+    // =========================
+    // EVENTS: SELECTORES
+    // =========================
+    UI.selPrograma.addEventListener('change', () => {
+      state.programaSel = UI.selPrograma.value;
+      state.asignaturaSel = '';
+      state.ras = [];
+      UI.contextPill.textContent = state.programaSel ? `Programa: ${state.programaSel}` : 'Sin asignatura';
+      renderRAList();
+      renderTable();
+
+      UI.selAsignatura.innerHTML = '<option value="">Seleccione asignatura</option>';
+      if (!state.programaSel) { UI.selAsignatura.disabled = true; return; }
+      const asigs = Object.keys(state.programas[state.programaSel] || {});
+      UI.selAsignatura.innerHTML += asigs.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+      UI.selAsignatura.disabled = false;
+      log(`📘 Programa seleccionado: ${state.programaSel} (asignaturas: ${asigs.length})`);
+    });
+
+    UI.selAsignatura.addEventListener('change', () => {
+      state.asignaturaSel = UI.selAsignatura.value;
+      if (!state.programaSel || !state.asignaturaSel) return;
+
+      const rasRaw = state.programas[state.programaSel][state.asignaturaSel] || [];
+      const seen = new Set();
+      state.ras = rasRaw.filter(x => {
+        const k = `${x.id}||${x.text}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+
+      state.rows = Array.from({length:7}, () => ({ cod:'', nombre:'', n1:null, n2:null, n3:null }));
+      UI.contextPill.textContent = `${state.programaSel} · ${state.asignaturaSel}`;
+      renderRAList();
+      renderTable();
+      log(`📗 Asignatura seleccionada: ${state.asignaturaSel} (RA: ${state.ras.length})`);
+    });
+
+    // =========================
+    // EVENTS: BOTONES
+    // =========================
+    UI.addRow.addEventListener('click', () => { state.rows.push({cod:'', nombre:'', n1:null, n2:null, n3:null}); renderTable(); });
+    UI.clear.addEventListener('click', () => { state.rows = []; renderTable(); });
+
+   // ✅ Export robusto en UNA sola hoja (local siempre; IA opcional no bloquea)
+// ✅ Export robusto en UNA sola hoja
+// ✅ Corrige análisis largo de Gemini: divide el texto en varias filas para que Excel no lo corte
+UI.export.addEventListener('click', async () => {
+  if (!state.rows.length) return;
+
+  log('🤖 Generando análisis institucional...');
+
+  const metricas = calcularMetricasGrupo();
+  const analisisLocal = generarAnalisisAcademico(metricas);
+  const analisisFinal = await resolverAnalisisSegunSeleccion(metricas, analisisLocal);
+
+  const wb = XLSX.utils.book_new();
+
+  const ra1 = state.ras[0]?.id || 'RA1';
+  const ra2 = state.ras[1]?.id || 'RA2';
+  const ra3 = state.ras[2]?.id || 'RA3';
+
+  const data = [];
+
+  // =========================
+  // ENCABEZADO
+  // =========================
+  data.push(['REPORTE CONSOLIDADO DE RESULTADOS DE APRENDIZAJE']);
+  data.push([]);
+
+  // =========================
+  // METADATOS
+  // =========================
+  const modoAnalisisExportado = UI.selTipoAnalisis?.value || 'auto';
+
+  data.push(['Programa', state.programaSel || '—', '', 'Asignatura', state.asignaturaSel || '—']);
+  data.push(['Año', state.meta.anio || '—', '', 'Periodo', state.meta.periodo || '—']);
+  data.push(['Tipo de análisis', modoAnalisisExportado, '', '', '']);
+  data.push([]);
+
+  // =========================
+  // NIVELES
+  // =========================
+  data.push(['TABLA DE NIVELES']);
+  data.push(['Nivel', 'Rango', 'Indicador']);
+
+  state.bands.forEach(b => {
+    data.push([b.name, `${b.min}-${b.max}`, b.blob]);
+  });
+
+  data.push([]);
+
+  // =========================
+  // TABLA DE ESTUDIANTES
+  // =========================
+  data.push(['REGISTRO DE ESTUDIANTES']);
+  data.push([
+    'Código', 'Nombre',
+    `C1 (${ra1})`, `Nivel ${ra1}`,
+    `C2 (${ra2})`, `Nivel ${ra2}`,
+    `C3 (${ra3})`, `Nivel ${ra3}`,
+    'Definitiva', 'Nivel final', 'Indicador final'
+  ]);
+
+  state.rows.forEach(r => {
+    const d = definitive(r.n1, r.n2, r.n3);
+    const b1 = badgeForScore(r.n1);
+    const b2 = badgeForScore(r.n2);
+    const b3 = badgeForScore(r.n3);
+    const bf = badgeForScore(d);
+
+    data.push([
+      r.cod || '',
+      r.nombre || '',
+      r.n1 ?? '',
+      b1.name || '—',
+      r.n2 ?? '',
+      b2.name || '—',
+      r.n3 ?? '',
+      b3.name || '—',
+      d ?? '',
+      bf.name || '—',
+      bf.blob || ''
+    ]);
+  });
+
+  // =========================
+  // PROMEDIO GRUPAL
+  // =========================
+  const a1 = avg(state.rows.map(r => r.n1));
+  const a2 = avg(state.rows.map(r => r.n2));
+  const a3 = avg(state.rows.map(r => r.n3));
+  const promFinal = metricas?.prom ?? '';
+
+  const niv1 = badgeForScore(a1);
+  const niv2 = badgeForScore(a2);
+  const niv3 = badgeForScore(a3);
+  const nivF = badgeForScore(promFinal);
+
+  data.push([]);
+  data.push([
+    'PROMEDIO GRUPAL', '',
+    a1 ?? '', niv1.name || '—',
+    a2 ?? '', niv2.name || '—',
+    a3 ?? '', niv3.name || '—',
+    promFinal, nivF.name || '—', nivF.blob || ''
+  ]);
+
+  // =========================
+  // ESTADÍSTICAS
+  // =========================
+  data.push([]);
+  data.push(['ESTADÍSTICAS DEL CURSO']);
+  data.push(['Promedio Corte 1', metricas?.a1 ?? '—']);
+  data.push(['Promedio Corte 2', metricas?.a2 ?? '—']);
+  data.push(['Promedio Corte 3', metricas?.a3 ?? '—']);
+  data.push(['Promedio final grupal', metricas?.prom ?? '—']);
+  data.push(['Tendencia', metricas?.tendencia ?? '—']);
+  data.push(['Brecha entre cortes', metricas?.brecha ?? '—']);
+  data.push(['Desviación sigma', metricas?.sigma ?? '—']);
+  data.push(['Riesgo académico (%)', metricas?.riesgoPct ?? '—']);
+  data.push(['Estado de alerta', metricas?.alerta ?? '—']);
+  data.push(['Estabilidad del grupo', metricas?.estabilidad ?? '—']);
+
+  // =========================
+  // ANÁLISIS
+  // =========================
+  data.push([]);
+  data.push(['ANÁLISIS DE RESULTADOS DE APRENDIZAJE']);
+
+  // Gemini puede devolver texto largo, cuatro párrafos o saltos de línea.
+  // Para evitar que Excel lo corte, el análisis se divide en varias filas.
+  const analisisNormalizado = String(analisisFinal || '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .trim();
+
+  function dividirAnalisisParaExcel(texto, maxCaracteres = 520) {
+    const limpio = String(texto || '').trim();
+
+    if (!limpio) return ['Sin análisis disponible.'];
+
+    // Respeta párrafos si Gemini los devuelve con saltos dobles.
+    const parrafos = limpio
+      .split(/\n\s*\n/)
+      .map(p => p.replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
+
+    const salida = [];
+
+    parrafos.forEach(parrafo => {
+      if (parrafo.length <= maxCaracteres) {
+        salida.push(parrafo);
+        return;
+      }
+
+      let restante = parrafo;
+
+      while (restante.length > maxCaracteres) {
+        let corte = restante.lastIndexOf('.', maxCaracteres);
+
+        if (corte < maxCaracteres * 0.55) {
+          corte = restante.lastIndexOf(';', maxCaracteres);
+        }
+
+        if (corte < maxCaracteres * 0.55) {
+          corte = restante.lastIndexOf(',', maxCaracteres);
+        }
+
+        if (corte < maxCaracteres * 0.55) {
+          corte = maxCaracteres;
+        }
+
+        const parte = restante.slice(0, corte + 1).trim();
+
+        if (parte) salida.push(parte);
+
+        restante = restante.slice(corte + 1).trim();
+      }
+
+      if (restante) salida.push(restante);
+    });
+
+    return salida.length ? salida : ['Sin análisis disponible.'];
+  }
+
+  const bloquesAnalisis = dividirAnalisisParaExcel(analisisNormalizado, 520);
+
+  bloquesAnalisis.forEach((bloque, i) => {
+    data.push([`Párrafo ${i + 1}`, bloque]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+
+  // =========================
+  // ANCHOS AUTOMÁTICOS DE COLUMNA
+  // =========================
+  function calcularAnchos(data) {
+    const maxCols = Math.max(...data.map(r => r.length));
+    const cols = [];
+
+    for (let c = 0; c < maxCols; c++) {
+      let maxLen = 10;
+
+      for (let r = 0; r < data.length; r++) {
+        const val = data[r][c];
+        const len = String(val ?? '').length;
+
+        if (len > maxLen) maxLen = len;
+      }
+
+      cols.push({ wch: Math.min(maxLen + 2, 45) });
+    }
+
+    return cols;
+  }
+
+  ws['!cols'] = calcularAnchos(data);
+
+  // Ajustes manuales finos
+  if (ws['!cols'][0]) ws['!cols'][0].wch = 18;
+  if (ws['!cols'][1]) ws['!cols'][1].wch = 120;
+  if (ws['!cols'][2]) ws['!cols'][2].wch = 12;
+  if (ws['!cols'][3]) ws['!cols'][3].wch = 18;
+  if (ws['!cols'][4]) ws['!cols'][4].wch = 12;
+  if (ws['!cols'][5]) ws['!cols'][5].wch = 18;
+  if (ws['!cols'][6]) ws['!cols'][6].wch = 12;
+  if (ws['!cols'][7]) ws['!cols'][7].wch = 18;
+  if (ws['!cols'][8]) ws['!cols'][8].wch = 12;
+  if (ws['!cols'][9]) ws['!cols'][9].wch = 18;
+  if (ws['!cols'][10]) ws['!cols'][10].wch = 45;
+
+  // =========================
+  // COMBINACIONES DE CELDAS
+  // =========================
+  const merges = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } },  // título principal
+    { s: { r: 2, c: 1 }, e: { r: 2, c: 2 } },   // programa valor
+    { s: { r: 2, c: 4 }, e: { r: 2, c: 10 } },  // asignatura valor
+    { s: { r: 3, c: 1 }, e: { r: 3, c: 2 } },   // año valor
+    { s: { r: 3, c: 4 }, e: { r: 3, c: 10 } }   // periodo valor
+  ];
+
+  const idxTablaNiveles = data.findIndex(row => row[0] === 'TABLA DE NIVELES');
+  const idxRegistro = data.findIndex(row => row[0] === 'REGISTRO DE ESTUDIANTES');
+  const idxPromedio = data.findIndex(row => row[0] === 'PROMEDIO GRUPAL');
+  const idxEstadisticas = data.findIndex(row => row[0] === 'ESTADÍSTICAS DEL CURSO');
+  const idxAnalisisTitulo = data.findIndex(row => row[0] === 'ANÁLISIS DE RESULTADOS DE APRENDIZAJE');
+
+  const idxAnalisisInicio = idxAnalisisTitulo >= 0 ? idxAnalisisTitulo + 1 : -1;
+  const idxAnalisisFin = idxAnalisisInicio >= 0 ? data.length - 1 : -1;
+
+  if (idxTablaNiveles >= 0) {
+    merges.push({ s: { r: idxTablaNiveles, c: 0 }, e: { r: idxTablaNiveles, c: 10 } });
+  }
+
+  if (idxRegistro >= 0) {
+    merges.push({ s: { r: idxRegistro, c: 0 }, e: { r: idxRegistro, c: 10 } });
+  }
+
+  if (idxEstadisticas >= 0) {
+    merges.push({ s: { r: idxEstadisticas, c: 0 }, e: { r: idxEstadisticas, c: 10 } });
+  }
+
+  if (idxAnalisisTitulo >= 0) {
+    merges.push({ s: { r: idxAnalisisTitulo, c: 0 }, e: { r: idxAnalisisTitulo, c: 10 } });
+  }
+
+  // El análisis ya no se fusiona en una sola fila.
+  // Cada bloque se escribe como:
+  // Columna A: Párrafo 1, Párrafo 2, etc.
+  // Columnas B-K: texto del párrafo.
+  if (idxAnalisisInicio >= 0 && idxAnalisisFin >= idxAnalisisInicio) {
+    for (let r = idxAnalisisInicio; r <= idxAnalisisFin; r++) {
+      merges.push({ s: { r, c: 1 }, e: { r, c: 10 } });
+    }
+  }
+
+  ws['!merges'] = merges;
+
+  // =========================
+  // ALTOS DE FILA
+  // =========================
+  ws['!rows'] = ws['!rows'] || [];
+
+  // Título
+  ws['!rows'][0] = { hpx: 32 };
+
+  // Metadatos
+  ws['!rows'][2] = { hpx: 24 };
+  ws['!rows'][3] = { hpx: 24 };
+
+  // Tabla de niveles
+  if (idxTablaNiveles >= 0) {
+    ws['!rows'][idxTablaNiveles] = { hpx: 28 };
+    ws['!rows'][idxTablaNiveles + 1] = { hpx: 24 };
+
+    const finNiveles = idxRegistro > 0 ? idxRegistro - 1 : idxTablaNiveles + 6;
+
+    for (let i = idxTablaNiveles + 2; i <= finNiveles; i++) {
+      ws['!rows'][i] = { hpx: 42 };
+    }
+  }
+
+  // Registro de estudiantes
+  if (idxRegistro >= 0) {
+    ws['!rows'][idxRegistro] = { hpx: 28 };
+    ws['!rows'][idxRegistro + 1] = { hpx: 26 };
+
+    if (idxPromedio > idxRegistro) {
+      for (let i = idxRegistro + 2; i < idxPromedio; i++) {
+        ws['!rows'][i] = { hpx: 24 };
+      }
+    }
+  }
+
+  // Promedio grupal
+  if (idxPromedio >= 0) {
+    ws['!rows'][idxPromedio] = { hpx: 28 };
+  }
+
+  // Estadísticas
+  if (idxEstadisticas >= 0) {
+    ws['!rows'][idxEstadisticas] = { hpx: 28 };
+
+    if (idxAnalisisTitulo > idxEstadisticas) {
+      for (let i = idxEstadisticas + 1; i < idxAnalisisTitulo; i++) {
+        ws['!rows'][i] = { hpx: 22 };
+      }
+    }
+  }
+
+  // Análisis
+  if (idxAnalisisTitulo >= 0) {
+    ws['!rows'][idxAnalisisTitulo] = { hpx: 28 };
+  }
+
+  // Altura dinámica para cada bloque del análisis.
+  // Esto evita que Excel muestre solo dos líneas de una respuesta larga.
+  if (idxAnalisisInicio >= 0 && idxAnalisisFin >= idxAnalisisInicio) {
+    for (let r = idxAnalisisInicio; r <= idxAnalisisFin; r++) {
+      const texto = String(data[r]?.[1] || '');
+      const lineasEstimadas = Math.ceil(texto.length / 110);
+
+      ws['!rows'][r] = {
+        hpx: Math.max(50, Math.min(190, lineasEstimadas * 22))
+      };
+    }
+  }
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Reporte RA');
+  XLSX.writeFile(wb, 'Reporte_RA_UnaHoja.xlsx');
+
+  log(`🚀 Excel exportado correctamente. Análisis dividido en ${bloquesAnalisis.length} bloque(s) para evitar cortes de texto.`);
+});
+
+    // =========================
+    // CARGA MANUAL (.xlsx)
+    // =========================
+    UI.file.addEventListener('change', async (e) => {
+      UI.logBox.textContent = '';
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      log(`📄 Archivo cargado: ${file.name}`);
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, {type:'array'});
+      state.workbook = wb;
+
+      parseHoja1MetaAndBands(wb);
+      parseHoja2ProgramsSubjectsRAs(wb);
+
+      UI.addRow.disabled = false;
+      UI.clear.disabled = false;
+      UI.export.disabled = false;
+
+      UI.statusHint.textContent = 'Excel cargado. Selecciona programa y asignatura.';
+      log('✅ Listo: selecciona programa → asignatura.');
+
+      state.rows = [];
+      state.ras = [];
+      renderRAList();
+      renderTable();
+    });
+
+    // =========================
+    // CARGA AUTOMÁTICA DESDE GITHUB
+    // =========================
+    async function iniciarCargaDesdeNube() {
+      log('🌐 Sincronizando con el servidor de Ingeniería...');
+      try{
+        const resp = await fetch(URL_GITHUB_RED, { cache: 'no-store' });
+        if(!resp.ok) throw new Error('No se pudo descargar el Excel desde GitHub.');
+
+        const buffer = await resp.arrayBuffer();
+        const wb = XLSX.read(buffer, { type: 'array' });
+        state.workbook = wb;
+
+        parseHoja1MetaAndBands(wb);
+        parseHoja2ProgramsSubjectsRAs(wb);
+
+        UI.addRow.disabled = false;
+        UI.clear.disabled = false;
+        UI.export.disabled = false;
+
+        UI.statusHint.textContent = '✅ Datos institucionales cargados. Seleccione su Programa.';
+        log('✅ SISTEMA LISTO: Menús habilitados desde la nube.');
+      }catch(err){
+        console.warn(err);
+        UI.statusHint.textContent = 'Modo local: cargue el Excel manualmente (.xlsx).';
+        log('⚠️ MODO LOCAL: No hay conexión a la nube o el enlace falló.');
+      }
+    }
+
+    // =========================
+    // INIT
+    // =========================
+    function init(){
+      UI.weightsPill.textContent = `Pesos: ${state.weights[0]} / ${state.weights[1]} / ${state.weights[2]}`;
+      renderRAList();
+      renderTable();
+      setTimeout(iniciarCargaDesdeNube, 600);
+    }
+
+    init();
+  </script>
+</body>
+</html>
