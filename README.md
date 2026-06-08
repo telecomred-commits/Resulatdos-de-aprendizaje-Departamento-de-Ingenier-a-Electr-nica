@@ -118,15 +118,212 @@ The general workflow is:
 
 ## 7. How to Use the Application
 
-To use the application, open the file `RA_App_Robusta_ConAnalisis_y_IA...html` in a web browser.
+The application is designed to run directly from a web browser. The user does not need to install a database, configure a server, or manually load the institutional assessment matrix.
 
-After the application opens, load the file `AssesmentRACircuitos.xlsx` using the Excel loading option available in the interface.
+The file AssesmentRACircuitos.xlsx is already included in the repository and is automatically loaded by the application when the system starts. This file contains the institutional structure required to display academic programs, courses, and Learning Outcomes.
 
-Once the Excel file has been loaded, select the academic program. Then select the course that will be analyzed. The application should display the Learning Outcomes associated with that course.
+The user workflow consists of six main stages:
 
-After verifying that the Learning Outcomes are shown correctly, use the corresponding test files from the course folder. For example, use the files in `Pruebas Circuitos Digitales 1/` when testing Digital Circuits I, or the files in `Pruebas Electronica III/` when testing Electronics III.
+Open the web application.
+Wait for the institutional matrix to load automatically.
+Select the academic program.
+Select the course.
+Enter the assessment grades in the application table.
+Generate the analysis locally or with AI support.
+Export the final Excel report.
+7.1 Open the Application
 
-Finally, review the generated analysis and export the results to Excel.
+To start using the system, open the main HTML file in a modern web browser:
+
+RA_App_Robusta_ConAnalisis_y_IA...html
+
+Recommended browsers are Google Chrome, Microsoft Edge, or Mozilla Firefox.
+
+If the application is published through GitHub Pages, the user can open it directly from the public GitHub Pages link.
+
+For GitHub Pages deployment, it is recommended to rename the main HTML file as:
+
+index.html
+
+This allows GitHub Pages to open the application automatically as the main page of the repository.
+
+7.2 Automatic Loading of the Institutional Matrix
+
+When the application starts, it automatically loads the institutional Excel file:
+
+AssesmentRACircuitos.xlsx
+
+The user does not need to upload this file manually.
+
+This file provides the academic structure used by the app, including:
+
+Academic programs.
+Courses.
+Learning Outcomes.
+Relationships between courses and Learning Outcomes.
+
+After the automatic loading process is completed, the program and course selection options become available in the interface.
+
+If the programs or courses do not appear, the user should verify that AssesmentRACircuitos.xlsx is located in the correct repository path and that the file name has not been changed.
+
+7.3 Select the Academic Program
+
+After the institutional matrix has been loaded automatically, the user must select the academic program to be analyzed.
+
+The program selection allows the app to filter the available courses according to the selected academic structure.
+
+Once the program is selected, the corresponding list of courses becomes available.
+
+7.4 Select the Course
+
+After selecting the academic program, the user must select the course to be analyzed.
+
+Once the course is selected, the application displays the Learning Outcomes assigned to that course.
+
+This step confirms that the course and its Learning Outcomes were correctly read from the institutional Excel matrix.
+
+If the selected course does not display Learning Outcomes, the user should verify that the course has Learning Outcomes correctly assigned in AssesmentRACircuitos.xlsx.
+
+7.5 Enter the Assessment Grades
+
+After selecting the course, the user must enter the assessment grades directly in the application table.
+
+The grade table is organized according to the assessment structure of the course. The user should complete the available cells with the corresponding student grades or assessment values.
+
+The grades should be entered according to the institutional grading scale used by the application. In the current institutional configuration, the expected scale is from 0 to 50.
+
+The user should verify that:
+
+Each grade is entered in the correct cell.
+The values correspond to the correct assessment period or component.
+The entered values use the expected numerical format.
+Empty cells are avoided when they correspond to required assessment data.
+The grades are consistent with the selected course and Learning Outcomes.
+
+The application uses the entered grades to calculate academic indicators and to generate the Learning Outcomes assessment analysis.
+
+7.6 Review the Entered Data
+
+Before generating the analysis, the user should review the information displayed in the app.
+
+The user should confirm:
+
+The selected academic program.
+The selected course.
+The Learning Outcomes displayed for the selected course.
+The grades entered in the assessment table.
+The consistency between the grades and the assessment structure.
+
+This review is important because the analysis and the exported Excel report are generated from the information entered in the application.
+
+If a grade is missing or entered incorrectly, the user should correct it before generating the analysis.
+
+7.7 Generate the Local Analysis
+
+The application can generate a local academic analysis using the data entered by the user.
+
+The local analysis is produced by the application without using external AI services. It is based on the internal calculations, indicators, and assessment rules implemented in the app.
+
+The local analysis may include:
+
+General course performance.
+Learning Outcome achievement.
+Results by assessment period.
+Academic risk indicators.
+Performance trends.
+Institutional interpretation based on the calculated results.
+
+This option is useful when the user wants to process the information directly in the browser without depending on external AI providers.
+
+The local analysis should be reviewed before exporting the final report.
+
+7.8 Generate the AI-Assisted Analysis
+
+The application also supports AI-assisted analysis when the corresponding API services are configured.
+
+The AI-assisted analysis uses the results calculated by the application and generates a written academic interpretation with the support of an external AI provider.
+
+Depending on the configuration, the app may support services such as:
+
+Gemini.
+Groq.
+OpenRouter.
+
+To use the AI-assisted analysis, the user must select the desired AI provider in the application and make sure that the corresponding API configuration is available.
+
+The AI-assisted analysis does not replace the numerical calculations performed by the application. The app first processes the grades and calculates the academic indicators. Then, the AI layer uses those results to produce a clearer institutional interpretation.
+
+For researchers who wish to reproduce the AI-assisted analysis tests but do not have their own API key, the authors may provide temporary API keys upon reasonable request. These keys are intended only for academic testing, reproducibility, and validation of the application workflow. Users are expected to use them responsibly and with discretion, avoiding unnecessary requests, excessive consumption, public disclosure, or inclusion of the keys in public repositories. For long-term use, institutional deployment, or extensive experimentation, users are strongly encouraged to configure their own API keys.
+Gemini:  AIzaSyBtbvE-f6yZE-viUvzicsAKy8ju9YSMF2w
+Grok:  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
+Open Router:  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
+
+
+The AI-assisted analysis may help describe:
+
+The general academic performance of the group.
+The level of Learning Outcome achievement.
+Strengths and weaknesses observed in the results.
+Possible academic risk patterns.
+Recommendations for improvement.
+Institutional interpretation of the assessment evidence.
+
+If the AI service does not respond, the user can still use the local analysis and export the report with the results generated by the application.
+
+7.9 Export the Excel Report
+
+After entering the grades and generating the analysis, the user can export the final report to Excel.
+
+The exported Excel file may include:
+
+Program information.
+Course information.
+Learning Outcomes.
+Entered grades.
+Assessment results.
+Academic indicators.
+Local analysis.
+AI-assisted analysis, if generated.
+Institutional interpretation and recommendations.
+
+The exported report can be used as academic evidence for course assessment, curriculum monitoring, institutional reporting, academic committees, or accreditation-related processes.
+
+7.10 Recommended User Workflow
+
+The recommended workflow is:
+
+Open the web application.
+Wait for AssesmentRACircuitos.xlsx to load automatically.
+Select the academic program.
+Select the course.
+Verify that the Learning Outcomes appear correctly.
+Enter the assessment grades in the application table.
+Review the entered grades.
+Generate the local analysis.
+If required, generate the AI-assisted analysis.
+Review the generated interpretation.
+Export the Excel report.
+Save the exported file as academic evidence.
+
+## 7. Basic Validation Before Using Official Data
+
+Before using the application with official institutional data, the user should test the complete workflow.
+
+The user should verify that:
+
+The application opens correctly in the browser.
+AssesmentRACircuitos.xlsx loads automatically.
+The academic programs appear correctly.
+The courses appear correctly.
+The selected course displays its Learning Outcomes.
+The grade table is available for data entry.
+The entered grades are processed correctly.
+The local analysis is generated.
+The AI-assisted analysis is generated, if enabled.
+The Excel report is exported correctly.
+The exported report is readable and complete.
+
+If any of these steps fails, the user should first check that AssesmentRACircuitos.xlsx is still available in the repository, that the file name has not been modified, and that the selected course has Learning Outcomes correctly assigned in the institutional matrix.
 
 ## 8. Expected Results
 
