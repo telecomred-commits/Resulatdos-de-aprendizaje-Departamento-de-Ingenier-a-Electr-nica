@@ -29,11 +29,11 @@ The repository contains the following main files and folders:
 
 * `RA_App_Robusta_ConAnalisis_y_IA...html`
 * `AssesmentRACircuitos.xlsx`
-* `Pruebas Campos Elec/`
-* `Pruebas Circuitos Digitales 1/`
-* `Pruebas Circuitos Digitales 2/`
-* `Pruebas Digital Signal P 1/`
-* `Pruebas Electronica III/`
+* `Tests  Circuits I and Laboratory/`
+* `Tests Digital Circuits II and Laboratory/`
+* `Tests Digital Signal Processing II and Laboratory/`
+* `Tests Electromagnetic Fields and Laboratory/`
+* `Tests Electronics III and Laboratory/`
 
 The HTML file contains the web application. The Excel file contains the institutional assessment matrix. The folders contain test files organized by course.
 
@@ -66,31 +66,31 @@ This file is required for the application to work correctly. If the structure, s
 
 The repository includes several test folders. Each folder contains files associated with a specific course or subject area. These files are used to verify that the application can load, process, analyze, and export assessment information correctly.
 
-### 5.1 Pruebas Campos Elec
+### 5.1 Tests Electromagnetic Fields and Laboratory
 
 The folder `Pruebas Campos Elec/` contains test files for the Electric Fields or Electromagnetic Fields course.
 
 These files are used to validate the assessment workflow for this course and to verify that the app can process the corresponding Learning Outcomes and assessment information.
 
-### 5.2 Pruebas Circuitos Digitales 1
+### 5.2 Tests Digital Circuits I and Laboratory
 
 The folder `Pruebas Circuitos Digitales 1/` contains test files for Digital Circuits I.
 
 These files are used to test the course selection process, the display of Learning Outcomes, the academic analysis, and the Excel export for this course.
 
-### 5.3 Pruebas Circuitos Digitales 2
+### 5.3 Tests Digital Circuits II and Laboratory
 
 The folder `Pruebas Circuitos Digitales 2/` contains test files for Digital Circuits II.
 
 These files provide an additional validation scenario and help verify that the application works consistently with different course data.
 
-### 5.4 Pruebas Digital Signal P 1
+### 5.4 Tests Digital Signal Processing II and Laboratory
 
 The folder `Pruebas Digital Signal P 1/` contains test files for Digital Signal Processing I.
 
 These files are used to validate the assessment workflow for a course related to signal processing and technical performance analysis.
 
-### 5.5 Pruebas Electronica III
+### 5.5 Tests Electronics III and Laboratory
 
 The folder `Pruebas Electronica III/` contains test files for Electronics III.
 
