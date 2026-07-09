@@ -68,31 +68,31 @@ The repository includes several test folders. Each folder contains files associa
 
 ### 5.1 Tests Electromagnetic Fields and Laboratory
 
-The folder `Pruebas Campos Elec/` contains test files for the Electric Fields or Electromagnetic Fields course.
+The folder `Tests Electromagnetic Fields and Laboratory/` contains test files for the Electric Fields or Electromagnetic Fields course.
 
 These files are used to validate the assessment workflow for this course and to verify that the app can process the corresponding Learning Outcomes and assessment information.
 
 ### 5.2 Tests Digital Circuits I and Laboratory
 
-The folder `Pruebas Circuitos Digitales 1/` contains test files for Digital Circuits I.
+The folder `Tests Digital Circuits I and Laboratory/` contains test files for Digital Circuits I.
 
 These files are used to test the course selection process, the display of Learning Outcomes, the academic analysis, and the Excel export for this course.
 
 ### 5.3 Tests Digital Circuits II and Laboratory
 
-The folder `Pruebas Circuitos Digitales 2/` contains test files for Digital Circuits II.
+The folder `Pruebas Digital Circuits II and Laboratory/` contains test files for Digital Circuits II.
 
 These files provide an additional validation scenario and help verify that the application works consistently with different course data.
 
 ### 5.4 Tests Digital Signal Processing II and Laboratory
 
-The folder `Pruebas Digital Signal P 1/` contains test files for Digital Signal Processing I.
+The folder `Tests Digital Signal Processing II and Laboratory/` contains test files for Digital Signal Processing I.
 
 These files are used to validate the assessment workflow for a course related to signal processing and technical performance analysis.
 
 ### 5.5 Tests Electronics III and Laboratory
 
-The folder `Pruebas Electronica III/` contains test files for Electronics III.
+The folder `Tests Electronics III and Laboratory/` contains test files for Electronics III.
 
 These files help verify the processing of assessment data, the relationship between the course and its Learning Outcomes, and the generation of academic reports.
 
