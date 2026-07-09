@@ -80,7 +80,7 @@ These files are used to test the course selection process, the display of Learni
 
 ### 5.3 Tests Digital Circuits II and Laboratory
 
-The folder `Pruebas Digital Circuits II and Laboratory/` contains test files for Digital Circuits II.
+The folder `Tests Digital Circuits II and Laboratory/` contains test files for Digital Circuits II.
 
 These files provide an additional validation scenario and help verify that the application works consistently with different course data.
 
